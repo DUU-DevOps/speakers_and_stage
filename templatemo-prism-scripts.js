@@ -267,49 +267,67 @@ https://templatemo.com/tm-600-prism-flux
         }
 
         // Initialize hexagonal skills grid
-        function initSkillsGrid() {
-            const skillsGrid = document.getElementById('skillsGrid');
-            const categoryTabs = document.querySelectorAll('.category-tab');
-            
-            function displaySkills(category = 'all') {
-                skillsGrid.innerHTML = '';
-                
-                const filteredSkills = category === 'all' 
-                    ? skillsData 
-                    : skillsData.filter(skill => skill.category === category);
-                
-                filteredSkills.forEach((skill, index) => {
-                    const hexagon = document.createElement('div');
-                    hexagon.className = 'skill-hexagon';
-                    hexagon.style.animationDelay = `${index * 0.1}s`;
-                    
-                    hexagon.innerHTML = `
-                        <div class="hexagon-inner">
-                            <div class="hexagon-content">
-                                <div class="skill-icon-hex">${skill.icon}</div>
-                                <div class="skill-name-hex">${skill.name}</div>
-                                <div class="skill-level">
-                                    <div class="skill-level-fill" style="width: ${skill.level}%"></div>
-                                </div>
-                                <div class="skill-percentage-hex">${skill.level}%</div>
-                            </div>
+function initSkillsGrid() {
+    const skillsGrid = document.getElementById('skillsGrid');
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    let overlay = document.querySelector('.skills-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'skills-overlay';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', () => {
+            document.querySelectorAll('.skill-hexagon.active').forEach(el => el.classList.remove('active'));
+            overlay.classList.remove('show');
+        });
+    }
+    function displaySkills(category = 'all') {
+        skillsGrid.innerHTML = '';
+        const filtered = category === 'all' ? skillsData : skillsData.filter(s => s.category === category);
+        filtered.forEach((skill, index) => {
+            const hexagon = document.createElement('div');
+            hexagon.className = 'skill-hexagon';
+            hexagon.style.animationDelay = `${index * 0.1}s`;
+            hexagon.innerHTML = `
+                <div class="hexagon-inner">
+                    <div class="hexagon-front">
+                        <div class="hexagon-content">
+                            <div class="skill-icon-hex">${skill.icon}</div>
+                            <div class="skill-name-hex">${skill.name}</div>
                         </div>
-                    `;
-                    
-                    skillsGrid.appendChild(hexagon);
-                });
-            }
-            
-            categoryTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    categoryTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    displaySkills(tab.dataset.category);
-                });
+                    </div>
+                    <div class="hexagon-back">
+                        <div class="hexagon-content">
+                            <div class="skill-name-hex">${skill.name}</div>
+                            <div class="skill-level">
+                                <div class="skill-level-fill" style="width: ${skill.level}%"></div>
+                            </div>
+                            <div class="skill-percentage-hex">${skill.level}%</div>
+                        </div>
+                    </div>
+                </div>`;
+            hexagon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const wasActive = hexagon.classList.contains('active');
+                document.querySelectorAll('.skill-hexagon.active').forEach(el => el.classList.remove('active'));
+                if (!wasActive) {
+                    hexagon.classList.add('active');
+                    overlay.classList.add('show');
+                } else {
+                    overlay.classList.remove('show');
+                }
             });
-            
-            displaySkills();
-        }
+            skillsGrid.appendChild(hexagon);
+        });
+    }
+    categoryTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            categoryTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            displaySkills(tab.dataset.category);
+        });
+    });
+    displaySkills();
+}
 
         // Event listeners
         document.getElementById('nextBtn').addEventListener('click', nextSlide);
@@ -349,13 +367,6 @@ https://templatemo.com/tm-600-prism-flux
 
         // Header scroll effect
         const header = document.getElementById('header');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
 
         // Smooth scrolling and active navigation
         const sections = document.querySelectorAll('section[id]');
